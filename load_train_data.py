@@ -9,16 +9,27 @@ import pandas as pd
 import os
 import textwrap
 
+from sklearn.feature_extraction.text import CountVectorizer
+
+
 if __name__ == '__main__':
+    
+    # read in the data
     data_dir = 'data_readinglevel'
     x_train_df = pd.read_csv(os.path.join(data_dir, 'x_train.csv'))
     y_train_df = pd.read_csv(os.path.join(data_dir, 'y_train.csv'))
+    x_test_df = pd.read_csv(os.path.join(data_dir, 'x_test.csv'))
 
+    # print out he dimenssions of the data
     N, n_cols = x_train_df.shape
-    print("Shape of x_train_df: (%d, %d)" % (N, n_cols))
-    print("Shape of y_train_df: %s" % str(y_train_df.shape))
+    print("Shape of x_train_df: ", (N, n_cols))
+    print("Shape of y_train_df: ", y_train_df.shape)
+    print("shape of x_test_df: ", x_test_df.shape)
 
-    # Print out 8 random entries
+
+
+
+def print_random_rows():
     tr_text_list = x_train_df['text'].values.tolist()
     prng = np.random.RandomState(101)
     rows = prng.permutation(np.arange(y_train_df.shape[0]))
