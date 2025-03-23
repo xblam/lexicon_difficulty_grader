@@ -47,7 +47,7 @@ def encoder(y_raw):
 
 
 class BOWLogisticRegressionCV:
-    def __init__(self, max_iter=10000, test_size=0.05, cv = 5, random_state=42):
+    def __init__(self, max_iter=10000, test_size=0.1, cv = 5, random_state=42):
         c_values = np.logspace(np.log10(1e-5), np.log10(1e5), num=100)
         self.param_grid = {
             'C': c_values,
@@ -140,33 +140,14 @@ def preprocess():
     return X_train_vectorized, y_train, X_test_vectorized
 
 
-def force_half_under_0_5(probas):
-    """
-    Given a 1D numpy array of probabilities, return a modified array
-    where exactly half are below 0.5 and half are above, by ranking.
-    """
-    N = len(probas)
-    sorted_indices = np.argsort(probas)
-    
-    # Create new probas initialized as 0.0
-    new_probas = np.zeros(N)
-
-    # First half (low confidence): assign evenly spaced values below 0.5
-    for i, idx in enumerate(sorted_indices[:N//2]):
-        new_probas[idx] = (i + 1) / (N + 1)  # Avoid exact 0
-
-    # Second half (high confidence): assign values above 0.5
-    for i, idx in enumerate(sorted_indices[N//2:]):
-        new_probas[idx] = 0.5 + (i + 1) / (N + 1) * 0.5
-
-    return new_probas
-
-
 if __name__ == '__main__':
     # takes the raw files and outputes everything we need to run LR
     X_train_vectorized, y_train, X_test_vectorized = preprocess()
 
-    model = BOWLogisticRegressionCV()
+    max = {}
+
+
+    model = BOWLogisticRegressionCV(test_size=0.05)
 
     model.fit(X_train_vectorized, y_train)
     acc = model.evaluate()
@@ -177,10 +158,5 @@ if __name__ == '__main__':
     y_test_probs = loaded_model.predict_proba(X_test_vectorized)[:, 1]  # Only class 1 probs
 
     np.savetxt("yproba1_test.txt", y_test_probs, fmt='%.6f')
-
-
-    # new_probas = force_half_under_0_5(y_test_probs)
-    # np.savetxt("yproba1_test.txt", new_probas, fmt='%.6f')
-
 
 
