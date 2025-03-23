@@ -37,11 +37,15 @@ Did you perform any "cleaning" of the data? (e.g. handle upper vs. lower case, s
 * for cleaning, we decided to keep it simple and remove all of the upper case and punctuation, and we also decided to get rid of stopwords
 
 
-WORK FROM THIS POINT FORWARD____________________________________________________________________________________________________________-
-
 How did you determine the final vocabulary set? Did you exclude any words? If so, why?
+* for the final vocab word, we just stuck with a count dict of all the words processed in from the text, excluding the stopwords and super rare words.
+
 What was your final vocabulary size? If size varies across folds because it depends on the training set, please provide the typical size ranges.
 Did you use counts or binary values or something else?
+* the final word size for all runs was 
+
+# WORKING HERE============================================================================================================================
+
 How does your approach handle out-of-vocabulary words in the test set? (you are allowed to just ignore them, but you should do this intentionally and your report should state clearly what is happening in your implementation and why).
 Did you use off-the-shelf libraries? Or implement from scratch?
 1B : Cross Validation Design Description

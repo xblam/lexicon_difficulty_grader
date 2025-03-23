@@ -1,3 +1,3 @@
-from .preprocess import preprocess
+from .preprocess import bow_preprocess, nn_preprocess
 
-print('processing imported')
+print('imported preprocess')
