@@ -45,99 +45,94 @@ def encoder(y_raw):
     return y_encoded
 
 
-class BOWLogisticRegression:
-    def __init__(self, max_iter=10000, test_size=0.2, random_state=42):
+class BOWLogisticRegressionCV:
+    def __init__(self, max_iter=10000, test_size=0.2, cv = 5, random_state=42):
+        self.param_grid = {
+            'C': [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100, 1000, 10000, 100000],
+            'penalty': ['l2'],
+            'solver': ['lbfgs']
+        }
+
         self.model = LogisticRegression(max_iter=max_iter)
         self.test_size = test_size
+        self.cv = cv
         self.random_state = random_state
+        self.best_model = None
+
 
     def fit(self, X, y):
         # Split data into train and validation sets
         self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(
             X, y, test_size=self.test_size, random_state=self.random_state
         )
-        # Fit model
-        self.model.fit(self.X_train, self.y_train)
+
+        base_model = LogisticRegression(max_iter=10000)
+
+        grid_search = GridSearchCV(
+            estimator=base_model,
+            param_grid=self.param_grid,
+            scoring='neg_log_loss',
+            cv=self.cv,
+            verbose=2, # Change depending on how detailed you want terminal to be
+            n_jobs=-1 # Max cpu count and speed
+        )
+
+        grid_search.fit(self.X_train, self.y_train)
+
+        # print out average accuracies for each level of c
+        for mean_score, params in zip(grid_search.cv_results_['mean_test_score'], grid_search.cv_results_['params']):
+            print(f"C = {params['C']:<8} -> Mean CV Accuracy = {mean_score:.4f}")
+        self.best_model = grid_search.best_estimator_
+        print("Best CV Params:", grid_search.best_params_)
+
 
     def evaluate(self):
         # Predict on validation set
-        y_pred = self.model.predict(self.X_val)
+        y_pred = self.best_model.predict(self.X_val)
         acc = accuracy_score(self.y_val, y_pred)
         print("Validation accuracy:", acc)
         return acc
 
+
     def predict(self, X_test):
-        return self.model.predict(X_test)
+        return self.best_model.predict(X_test)
+
 
     def predict_proba(self, X_test):
-        return self.model.predict_proba(X_test)
+        return self.best_model.predict_proba(X_test)
 
 
-if __name__ == '__main__':
+def preprocess():
     # read in the data
     data_dir = 'data_readinglevel'
     x_train_df = pd.read_csv(os.path.join(data_dir, 'x_train.csv'))
     y_train_df = pd.read_csv(os.path.join(data_dir, 'y_train.csv'))
     x_test_df = pd.read_csv(os.path.join(data_dir, 'x_test.csv'))
 
-    # DO THIS TO TEST WHEN YOU WANT TO TEST IT
     tr_text_list = x_train_df['text'].values.tolist()
     te_text_list = x_test_df['text'].values.tolist()
 
-
-# MAKE THE VECTORIZER FOR THE XBOW-----------------------------------------------------------------------------------------------------------------
     bow = Vectorizer()
     X_train_vectorized = bow.fit_transform(tr_text_list)
 
-    # bow.print_vocab_with_counts()
-
-    print("Vocab size:", len(bow.get_vocab()))
-    print("Shape of X_train_bow: ", X_train_vectorized.shape)
-
-# RUN LR -------------------------------------------------------------------------------------------------------------------------------------
-    # Run the encoder to get the y output values
-
-
-
     y_train = encoder(y_train_df['Coarse Label'].values)
 
-    # Train + validate model
-    lr_model = BOWLogisticRegression()
-    lr_model.fit(X_train_vectorized, y_train)
-    lr_model.evaluate()
-
-    # Predict on test set
     X_test_vectorized = bow.transform(te_text_list)
-    y_pred_test = lr_model.predict(X_test_vectorized)
-    np.savetxt("yproba1_test.txt", y_pred_test, fmt='%d')
+
+    return X_train_vectorized, y_train, X_test_vectorized
 
 
+if __name__ == '__main__':
+    # takes the raw files and outputes everything we need to run LR
+    X_train_vectorized, y_train, X_test_vectorized = preprocess()
 
+    model = BOWLogisticRegressionCV()
+    model.fit(X_train_vectorized, y_train)
+    model.evaluate()
 
-    # y_train = encoder(y_train_df['Coarse Label'].values)
+    y_test_preds = model.predict(X_test_vectorized)
 
-    # print(y_train.shape)
-
-    # # need to get the validation set
-
-    # my_model = LogisticRegression(max_iter=1000)
-    # X_train, X_val, y_train, y_val = train_test_split(X_train_vectorized, y_train, test_size=0.2, random_state=42)
-    # my_model.fit(X_train, y_train)
-    # y_pred = my_model.predict(X_val)
-
-    # print(y_pred.shape)
-    
-    # # np.savetxt("y_pred.txt", y_pred, fmt='%d')
-    # # np.savetxt("y_val.txt", y_val, fmt='%d')
-
-    # train_accuracy = accuracy_score(y_pred, y_val)
-    # print("Train accuracy: ", train_accuracy)
-
-    # # USED TO OUTPUT BEST GUESS INTO FILE FOR GRADESCOPE -----------------------------------------------------------------------------------------
-    # X_test_vectorized = bow.transform(te_text_list)
-    # y_pred = my_model.predict(X_test_vectorized)
-    # print(y_pred.shape)
-    # np.savetxt("yproba1_test.txt", y_pred, fmt='%d')
+    np.savetxt("yproba1_test.txt", y_test_preds, fmt='%d')
 
 
 
