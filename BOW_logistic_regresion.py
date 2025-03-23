@@ -78,7 +78,7 @@ class BOWLogisticRegressionCV:
             verbose=2, # Change depending on how detailed you want terminal to be
             n_jobs=-1 # Max cpu count and speed
         )
-
+        self.grid_search = grid_search  # ✅ add this line
         grid_search.fit(self.X_train, self.y_train)
 
         # print out average accuracies for each level of c
@@ -89,11 +89,10 @@ class BOWLogisticRegressionCV:
 
 
     def evaluate(self):
-        # Predict on validation set
-        y_pred = self.best_model.predict(self.X_val)
-        acc = accuracy_score(self.y_val, y_pred)
-        print("Validation accuracy:", acc)
-        return acc
+        # Get mean test score from the best CV result (already cross-validated)
+        mean_score = self.grid_search.best_score_
+        print(f"Mean CV ROC-AUC: {mean_score:.4f}")
+        return mean_score
 
     def predict_proba(self, X_test):
         return self.best_model.predict_proba(X_test)
@@ -144,10 +143,8 @@ if __name__ == '__main__':
     # takes the raw files and outputes everything we need to run LR
     X_train_vectorized, y_train, X_test_vectorized = preprocess()
 
-    max = {}
 
-
-    model = BOWLogisticRegressionCV(test_size=0.05)
+    model = BOWLogisticRegressionCV(test_size=0.1)
 
     model.fit(X_train_vectorized, y_train)
     acc = model.evaluate()
