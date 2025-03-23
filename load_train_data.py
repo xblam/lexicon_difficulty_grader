@@ -47,7 +47,7 @@ def encoder(y_raw):
 
 
 class BOWLogisticRegressionCV:
-    def __init__(self, max_iter=10000, test_size=0.2, cv = 10, random_state=42):
+    def __init__(self, max_iter=10000, test_size=0.05, cv = 5, random_state=42):
         c_values = np.logspace(np.log10(1e-5), np.log10(1e5), num=100)
         self.param_grid = {
             'C': c_values,
@@ -83,7 +83,7 @@ class BOWLogisticRegressionCV:
 
         # print out average accuracies for each level of c
         for mean_score, params in zip(grid_search.cv_results_['mean_test_score'], grid_search.cv_results_['params']):
-            print(f"C = {params['C']:<8} -> Mean CV Accuracy = {mean_score:.4f}")
+            print(f"C = {params['C']:.4f} -> Mean CV Accuracy = {mean_score:.4f}")
         self.best_model = grid_search.best_estimator_
         print("Best CV Params:", grid_search.best_params_)
 
@@ -163,19 +163,21 @@ def force_half_under_0_5(probas):
 
 
 if __name__ == '__main__':
-    # # takes the raw files and outputes everything we need to run LR
+    # takes the raw files and outputes everything we need to run LR
     X_train_vectorized, y_train, X_test_vectorized = preprocess()
+
     model = BOWLogisticRegressionCV()
 
-    # model.fit(X_train_vectorized, y_train)
-    # model.evaluate()
-    # model.save_model('best_model.pkl')
+    model.fit(X_train_vectorized, y_train)
+    acc = model.evaluate()
+    model.save_model('best_model.pkl')
 
     loaded_model = model.load_model('best_model.pkl')
 
     y_test_probs = loaded_model.predict_proba(X_test_vectorized)[:, 1]  # Only class 1 probs
 
     np.savetxt("yproba1_test.txt", y_test_probs, fmt='%.6f')
+
 
     # new_probas = force_half_under_0_5(y_test_probs)
     # np.savetxt("yproba1_test.txt", new_probas, fmt='%.6f')
