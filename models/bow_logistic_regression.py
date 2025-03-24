@@ -1,15 +1,15 @@
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, train_test_split
-
+from sklearn.metrics import accuracy_score
 import numpy as np
 import pickle
 
 
 class BOWLogisticRegressionCV:
     def __init__(self, max_iter=20000, test_size=0.2, cv = 5, random_state=42):
-        # c_values = np.logspace(np.log10(1e-3), np.log10(1e2), num=30)
-        c_values = [0.1]
+        c_values = np.logspace(np.log10(1e-3), np.log10(1e2), num=30)
+        # c_values = [0.1]
         self.param_grid = {
             'C': c_values,
             'penalty': ['l2'],
@@ -51,14 +51,22 @@ class BOWLogisticRegressionCV:
 
     def evaluate(self):
         # Get mean test score from the best CV result (already cross-validated)
-        mean_score = self.grid_search.best_score_
-        print(f"Mean CV: {mean_score:.4f}")
 
-        # Combine the first two cols of X_val and y_val to get binary results
-        val_score = self.best_model.score(self.X_val, self.y_val)
-        print(f"Validation Accuracy: {val_score:.4f}")
-        return val_score
-        
+        y_preds = self.best_model.predict(self.X_val)
+        accuracy = accuracy_score(self.y_val, y_preds)
+        print(f"multi Validation Accuracy: {accuracy:.4f}")
+
+        y_preds_binary = np.where(y_preds >= 2, 1, 0)
+        y_val_binary = np.where(self.y_val >= 2, 1, 0)
+        accuracy = accuracy_score(y_val_binary, y_preds_binary)
+
+        print(f"binary Validation Accuracy: {accuracy:.4f}")
+        return accuracy
+
+    def output_pred(self, X_test):
+        y_preds = self.best_model.predict(X_test)
+        y_preds = np.where(y_preds >= 2, 1, 0)
+        return y_preds
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)
@@ -75,5 +83,5 @@ class BOWLogisticRegressionCV:
 
     def load_model(self):
         with open('output/lr_model.pkl', 'rb') as f:
-            loaded_model = pickle.load(f)
-        return loaded_model
+            self.best_model = pickle.load(f)
+        return self.best_model
