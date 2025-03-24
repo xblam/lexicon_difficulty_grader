@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 def nn_preprocess(dir_name):
     vectorizer = CountVectorizer(
         lowercase=True,
-        stop_words=None,
+        stop_words='None',
         max_df=1.0,
         min_df=0
     )
