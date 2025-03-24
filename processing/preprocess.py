@@ -26,7 +26,7 @@ def lr_preprocess(dir_name):
     vocab = vectorizer.get_feature_names_out()
 
     label_encoder = LabelEncoder()
-    y_train = label_encoder.fit_transform(y_train_df['Coarse Label'].values)
+    y_train = label_encoder.fit_transform(y_train_df['Fine Label'].values)
 
     return X_train_vectorized, y_train, X_test_vectorized
 
@@ -63,3 +63,5 @@ def nn_preprocess(dir_name):
     return X_train_vectorized, y_train, X_test_vectorized
 
 
+if __name__ == "__main__":
+    lr_preprocess('data_readinglevel')
