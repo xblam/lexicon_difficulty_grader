@@ -1,4 +1,4 @@
-from .BOW import BOWLogisticRegressionCV
-# from .neural_net import NeuralNet
+from .bow_logistic_regression import BOWLogisticRegressionCV
+from .bow_nn import BOWNeuralNetworkCV
 
-print('imported BOW')
+print('imported models')

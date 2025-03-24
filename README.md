@@ -42,11 +42,12 @@ How did you determine the final vocabulary set? Did you exclude any words? If so
 
 What was your final vocabulary size? If size varies across folds because it depends on the training set, please provide the typical size ranges.
 Did you use counts or binary values or something else?
-* the final word size for all runs was 
+* the final word size for all runs was PUT IN THE WORD SIZE HERE
 
 # WORKING HERE============================================================================================================================
 
 How does your approach handle out-of-vocabulary words in the test set? (you are allowed to just ignore them, but you should do this intentionally and your report should state clearly what is happening in your implementation and why).
+* TALK ABOUT HOW WE ADDED THEM TO THE LAST VECTOR AS A SORT OF 'UNSEEN WORDS CATEGORY, AND THEN WE PUT IT BACK INTO THE MODEL
 Did you use off-the-shelf libraries? Or implement from scratch?
 1B : Cross Validation Design Description
 Well-written paragraph describing how you use cross-validation to perform both classifier training and any hyperparameter selection needed for the classifier pipeline.
