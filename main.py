@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 from models import BOWLogisticRegressionCV
-from processing import nn_preprocess
+from processing import nn_preprocess, lr_preprocess
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -24,7 +24,8 @@ def run_lr():
     loaded_model = model.load_model()
 
     acc = model.evaluate()
-    y_test_probs = loaded_model.predict_proba(X_test_vectorized)[:, 1]  # Only class 1 probs
+    y_test_probs = loaded_model.predict_proba(X_test_vectorized)  # Only class 1 probs
+    y_test_probs = y_test_probs[:,2] + y_test_probs[:,3] # Combine the last 2 to make our guess about which ones are difficult
     np.savetxt("output/yproba1_test.txt", y_test_probs, fmt='%.6f')
 
 def run_nn():
@@ -40,6 +41,6 @@ def run_nn():
 
 if __name__ == '__main__':
     # takes the raw files and outputes everything we need to run LR
-    X_train_vectorized, y_train, X_test_vectorized = nn_preprocess('data_readinglevel')
+    X_train_vectorized, y_train, X_test_vectorized = lr_preprocess('data_readinglevel')
     run_lr()
 
