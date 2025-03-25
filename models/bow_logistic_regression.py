@@ -7,7 +7,7 @@ import pickle
 
 
 class BOWLogisticRegressionCV:
-    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=0.1, penalty=['l2'], solver=['lbfgs'], scorer='accuracy', binary=True, random_state=96):
+    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=[1e-4,1e-3,1e-2,1e-1,1,1e1,1e2,1e3], penalty=['l2'], solver=['lbfgs'], scorer='accuracy', binary=True, random_state=96):
         self.param_grid = {
             'C': c_vals,
             'penalty': penalty,
