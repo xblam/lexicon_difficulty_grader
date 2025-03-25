@@ -6,6 +6,7 @@ from processing import preprocess
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
+from pprint import pprint
 
 
 def plot_confusion_matrix(y_true, y_pred):
@@ -18,38 +19,47 @@ def plot_confusion_matrix(y_true, y_pred):
 
 
 if __name__ == '__main__':
-    # in this case the y_train will be 4 classes
-    X_train_vectorized, y_train, X_test_vectorized = preprocess(bianary=False)
-    
-    print(f'shape of x_train: {X_train_vectorized.shape}')
-    print(f'set of y_train: {set(y_train)}')
+    # to run with just 2 classes, or to run with 4 classes then simplify to 2
+    binary = False
 
+    #PARAMS TO TWEAK HERE
+    X_train_vectorized, y_train, X_test_vectorized = preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=5, binary=binary)
+
+    pprint(X_train_vectorized)
+    print(X_test_vectorized.shape)
+    print(X_train_vectorized.shape)
+    pprint(y_train)
+    # PARAMS TO TWEAK HERE
     model = BOWLogisticRegressionCV(
         max_iter=10000, 
         test_size=0.2, 
         cv=5, 
-        c_vals=[1e-5,1e-4,1e-3,1e-2,1e-1,1,10,100,1000],
+        c_vals=np.logspace(-3, 3, num=30),
+        # c_vals = [0.1],
         penalty=['l2'], 
         solver=['lbfgs'], 
-        scorer='accuracy', 
+        scorer='accuracy',
+        binary=binary,
         random_state=42)
 
-    model.fit(X_train_vectorized, y_train)
+
     
-    model.save_model()
+    # if you have trained and saved model comment out fit and run load
+    model.fit(X_train_vectorized, y_train)
+    # loaded_model = model.load_model()
 
-    loaded_model = model.load_model()
-    # acc = model.evaluate()
+    model.evaluate()
+    model.save_model
+    y_test_pred = model.predict(X_test_vectorized)
+    print(set(y_test_pred))
+    print(y_test_pred[:100])
 
-    # output = model.output_pred(X_test_vectorized)
+    # if not binary turn the guesses binary
+    if not binary:
+        y_test_pred = np.where(y_test_pred >= 2, 1, 0)
+        print(set(y_test_pred))
+    print(y_test_pred[:100])
 
+    print("OUTPUT PREDICTED")
 
-    # np.savetxt("output/yproba1_test.txt", output, fmt='%.6f')
-
-
-    # np.savetxt("output/yproba1_test.txt", model.predict(X_train_vectorized), fmt='%.6f')
-
-
-
-
-# REGRESSION ON MULTIPLE CLASSES DONE, AND THEN WE CONCATENATE TOGETHER TO GET THE FINAL OUTPUT DECISION
+    np.savetxt("output/yproba1_test.txt", y_test_pred, fmt='%.6f')

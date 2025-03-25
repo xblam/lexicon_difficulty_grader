@@ -7,7 +7,7 @@ import pickle
 
 
 class BOWLogisticRegressionCV:
-    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=0.1, penalty=['l2'], solver=['lbfgs'], scorer='accuracy', random_state=42):
+    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=0.1, penalty=['l2'], solver=['lbfgs'], scorer='accuracy', binary=True, random_state=42):
         self.param_grid = {
             'C': c_vals,
             'penalty': penalty,
@@ -19,6 +19,7 @@ class BOWLogisticRegressionCV:
         self.cv = cv
         self.random_state = random_state
         self.scorer = scorer
+        self.binary = binary
         self.best_model = None
 
 
@@ -52,21 +53,28 @@ class BOWLogisticRegressionCV:
     def evaluate(self):
         # get the multi class mean test score on validation
         y_preds = self.best_model.predict(self.X_val)
-        accuracy = accuracy_score(self.y_val, y_preds)
-        print(f"multi Validation Accuracy: {accuracy:.4f}")
+        print(y_preds.shape)
 
-        # get the binary class mean test score on validation
-        y_preds_binary = np.where(y_preds >= 2, 1, 0)
-        y_val_binary = np.where(self.y_val >= 2, 1, 0)
-        accuracy = accuracy_score(y_val_binary, y_preds_binary)
+        print(self.binary)
+        print(set(y_preds))
+        print(set(self.y_val))
 
-        print(f"binary Validation Accuracy: {accuracy:.4f}")
+        # if multiclass get the binary class test score on val
+        if not self.binary:
+            print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_val, y_preds)}')
+            print(self.y_val)
+            print(set(self.y_val))
+            print(y_preds)
+            print(set(y_preds))
+            y_preds_binary = np.where(y_preds >= 2, 1, 0)
+            y_val_binary = np.where(self.y_val >= 2, 1, 0)
+            accuracy = accuracy_score(y_val_binary, y_preds_binary)
+            print(f"MULTICLASS Validation Accuracy: {accuracy:.4f}")
+        else:
+            accuracy = accuracy_score(self.y_val, y_preds)
+            print(f"BINARY Validation Accuracy: {accuracy:.4f}")
+
         return accuracy
-
-    def predict_binary(self, X_test):
-        y_preds = self.best_model.predict(X_test)
-        y_preds = np.where(y_preds >= 2, 1, 0)
-        return y_preds
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)
