@@ -2,12 +2,15 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
 import numpy as np
 import pickle
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import *
 
 class BOWLogisticRegressionCV:
-    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=[1e-4,1e-3,1e-2,1e-1,1,1e1,1e2,1e3], penalty=['l2'], solver=['lbfgs'], scorer='accuracy', binary=True, random_state=96):
+    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=[1e-4,1e-3,1e-2,1e-1,1,1e1,1e2,1e3], penalty=['l2'], solver=['lbfgs'], scoring='accuracy', binary=True, random_state=42):
         self.param_grid = {
             'C': c_vals,
             'penalty': penalty,
@@ -18,10 +21,9 @@ class BOWLogisticRegressionCV:
         self.test_size = test_size
         self.cv = cv
         self.random_state = random_state
-        self.scorer = scorer
+        self.scoring = scoring
         self.binary = binary
         self.best_model = None
-
 
     def fit(self, X, y):
         # val set not used in cv folds, only for final eval
@@ -34,7 +36,7 @@ class BOWLogisticRegressionCV:
         grid_search = GridSearchCV(
             estimator=base_model,
             param_grid=self.param_grid,
-            scoring=self.scorer, # so that it predicts using probabilities
+            scoring=self.scoring, # so that it predicts using probabilities
             cv=self.cv,
             verbose=2, # Change depending on how detailed you want terminal to be
             n_jobs=-1 # Max cpu count and speed
@@ -52,27 +54,25 @@ class BOWLogisticRegressionCV:
 
     def evaluate(self):
         # get the multi class mean test score on validation
-        y_preds = self.best_model.predict(self.X_val)
+        self.y_preds = self.predict_proba(self.X_val)[:,1]
+        
+        auc = roc_auc_score(self.y_val, self.y_preds)
 
         # if multiclass get the binary class test score on val
         if not self.binary:
-            print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_val, y_preds)}')
-            y_preds = np.where(y_preds >= 2, 1, 0)
+            print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_val, self.y_preds)}')
             self.y_val = np.where(self.y_val >= 2, 1, 0)
 
-        accuracy = accuracy_score(self.y_val, y_preds)
-        print(f"BINARY Validation Accuracy: {accuracy:.4f}")
+        auc = roc_auc_score(self.y_val, self.y_preds)
+        print(f"BINARY Validation Accuracy: {auc:.4f}")
 
-        return accuracy
+        # return accuracy
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)
 
     def predict_proba(self, X_test):
         return self.best_model.predict_proba(X_test)
-
-    def get_best_params(self):
-        return self.best_model.get_params()
 
     def save_model(self, path='output/lr_model.pkl'):
         model_bundle = {
@@ -94,3 +94,18 @@ class BOWLogisticRegressionCV:
 
         print("model and validation set loaded successfully.")
         return self.best_model
+
+
+    def plot_confusion_matrix(self):
+        actual = self.y_val
+        predicted = self.best_model.predict(self.X_val)
+
+        # Compute confusion matrix
+        cm = confusion_matrix(actual, predicted)
+
+        # Display the matrix with blue color map
+        cm_display = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1])
+        cm_display.plot(cmap='Blues')  # ← set color here
+        plt.title("Confusion Matrix")
+        plt.show()
+

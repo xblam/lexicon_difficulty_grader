@@ -3,14 +3,23 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import textwrap
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
 
 
-def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, max_df=0.85, min_df=10, binary=True):
-    vectorizer = CountVectorizer(
+def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=10, binary=True):
+    # vectorizer = Vectorizer(
+    #     lowercase=lowercase,
+    #     stop_words=stop_words,
+    #     max_df=max_df,
+    #     min_df=min_df,
+    # )
+    vectorizer = TfidfVectorizer(
         lowercase=lowercase,
         stop_words=stop_words,
         min_df=min_df,
     )
+
     # read in the data
     data_dir = dir_name
     x_train_df = pd.read_csv(os.path.join(data_dir, 'x_train.csv'))
@@ -22,7 +31,7 @@ def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, ma
 
     X_train_vectorized = vectorizer.fit_transform(tr_text_list)
     X_test_vectorized = vectorizer.transform(te_text_list)
-    vocab = vectorizer.get_feature_names_out()
+    # vocab = vectorizer.get_feature_names_out()
 
     label_encoder = LabelEncoder()
 

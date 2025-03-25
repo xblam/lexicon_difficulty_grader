@@ -9,41 +9,32 @@ from sklearn.metrics import accuracy_score
 from pprint import pprint
 
 
-def plot_confusion_matrix(y_true, y_pred):
-    cm = confusion_matrix(y_true, y_pred)
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
-    plt.title("Confusion Matrix")
-    plt.show()
-
-
 if __name__ == '__main__':
     # to run with just 2 classes, or to run with 4 classes then simplify to 2
     binary = True
 
     #PARAMS TO TWEAK HERE
     X_train_vectorized, y_train, X_test_vectorized = preprocess(
-        dir_name='data_readinglevel', 
-        lowercase=True, 
-        stop_words='english', 
-        max_df=.90, 
-        min_df=0, 
+        dir_name='data_readinglevel',
+        lowercase=True,
+        stop_words='english',
+        min_df=10,
         binary=binary,
     )
 
     # PARAMS TO TWEAK HERE
     model = BOWLogisticRegressionCV(
         max_iter=10000, 
-        test_size=0.1, 
+        test_size=0.1,
         cv=5, 
-        # c_vals=np.logspace(-4, 4, 20),
-        c_vals = [0.1],
+        c_vals=np.logspace(-5, 3, 30),
         penalty=['l2'], 
         solver=['lbfgs'], 
-        scorer='accuracy',
+        # penalty=['elasticnet'], 
+        # solver=['saga'],
+        scoring='roc_auc_ovr',
         binary=binary,
-        random_state=96)
+        random_state=1)
     
     # if you have trained and saved model comment out fit and run load
     model.fit(X_train_vectorized, y_train)
@@ -60,3 +51,5 @@ if __name__ == '__main__':
     print("OUTPUT PREDICTED")
 
     np.savetxt("output/yproba1_test.txt", y_test_pred, fmt='%.6f')
+
+    model.plot_confusion_matrix()
