@@ -20,29 +20,22 @@ def plot_confusion_matrix(y_true, y_pred):
 
 if __name__ == '__main__':
     # to run with just 2 classes, or to run with 4 classes then simplify to 2
-    binary = False
+    binary = True
 
     #PARAMS TO TWEAK HERE
     X_train_vectorized, y_train, X_test_vectorized = preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=5, binary=binary)
 
-    pprint(X_train_vectorized)
-    print(X_test_vectorized.shape)
-    print(X_train_vectorized.shape)
-    pprint(y_train)
     # PARAMS TO TWEAK HERE
     model = BOWLogisticRegressionCV(
         max_iter=10000, 
-        test_size=0.2, 
+        test_size=0.1, 
         cv=5, 
         c_vals=np.logspace(-3, 3, num=30),
-        # c_vals = [0.1],
         penalty=['l2'], 
         solver=['lbfgs'], 
         scorer='accuracy',
         binary=binary,
         random_state=42)
-
-
     
     # if you have trained and saved model comment out fit and run load
     model.fit(X_train_vectorized, y_train)
@@ -51,14 +44,10 @@ if __name__ == '__main__':
     model.evaluate()
     model.save_model
     y_test_pred = model.predict(X_test_vectorized)
-    print(set(y_test_pred))
-    print(y_test_pred[:100])
 
     # if not binary turn the guesses binary
     if not binary:
         y_test_pred = np.where(y_test_pred >= 2, 1, 0)
-        print(set(y_test_pred))
-    print(y_test_pred[:100])
 
     print("OUTPUT PREDICTED")
 

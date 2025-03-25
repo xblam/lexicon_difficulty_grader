@@ -53,26 +53,15 @@ class BOWLogisticRegressionCV:
     def evaluate(self):
         # get the multi class mean test score on validation
         y_preds = self.best_model.predict(self.X_val)
-        print(y_preds.shape)
-
-        print(self.binary)
-        print(set(y_preds))
-        print(set(self.y_val))
 
         # if multiclass get the binary class test score on val
         if not self.binary:
             print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_val, y_preds)}')
-            print(self.y_val)
-            print(set(self.y_val))
-            print(y_preds)
-            print(set(y_preds))
-            y_preds_binary = np.where(y_preds >= 2, 1, 0)
-            y_val_binary = np.where(self.y_val >= 2, 1, 0)
-            accuracy = accuracy_score(y_val_binary, y_preds_binary)
-            print(f"MULTICLASS Validation Accuracy: {accuracy:.4f}")
-        else:
-            accuracy = accuracy_score(self.y_val, y_preds)
-            print(f"BINARY Validation Accuracy: {accuracy:.4f}")
+            y_preds = np.where(y_preds >= 2, 1, 0)
+            y_val = np.where(self.y_val >= 2, 1, 0)
+
+        accuracy = accuracy_score(self.y_val, y_preds)
+        print(f"BINARY Validation Accuracy: {accuracy:.4f}")
 
         return accuracy
 
