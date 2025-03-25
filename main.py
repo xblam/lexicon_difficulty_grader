@@ -23,19 +23,26 @@ if __name__ == '__main__':
     binary = True
 
     #PARAMS TO TWEAK HERE
-    X_train_vectorized, y_train, X_test_vectorized = preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=5, binary=binary)
+    X_train_vectorized, y_train, X_test_vectorized = preprocess(
+        dir_name='data_readinglevel', 
+        lowercase=True, 
+        stop_words='english', 
+        max_df=.90, 
+        min_df=0, 
+        binary=binary,
+    )
 
     # PARAMS TO TWEAK HERE
     model = BOWLogisticRegressionCV(
         max_iter=10000, 
         test_size=0.1, 
         cv=5, 
-        c_vals=np.logspace(-3, 3, num=30),
+        c_vals=np.logspace(-4, 4, 20),
         penalty=['l2'], 
         solver=['lbfgs'], 
         scorer='accuracy',
         binary=binary,
-        random_state=42)
+        random_state=96)
     
     # if you have trained and saved model comment out fit and run load
     model.fit(X_train_vectorized, y_train)

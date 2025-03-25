@@ -5,7 +5,7 @@ import textwrap
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=5, binary=True):
+def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, max_df=0.85, min_df=10, binary=True):
     vectorizer = CountVectorizer(
         lowercase=lowercase,
         stop_words=stop_words,

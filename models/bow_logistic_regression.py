@@ -7,7 +7,7 @@ import pickle
 
 
 class BOWLogisticRegressionCV:
-    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=0.1, penalty=['l2'], solver=['lbfgs'], scorer='accuracy', binary=True, random_state=42):
+    def __init__(self, max_iter=10000, test_size=0.2, cv=5, c_vals=0.1, penalty=['l2'], solver=['lbfgs'], scorer='accuracy', binary=True, random_state=96):
         self.param_grid = {
             'C': c_vals,
             'penalty': penalty,
@@ -58,7 +58,7 @@ class BOWLogisticRegressionCV:
         if not self.binary:
             print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_val, y_preds)}')
             y_preds = np.where(y_preds >= 2, 1, 0)
-            y_val = np.where(self.y_val >= 2, 1, 0)
+            self.y_val = np.where(self.y_val >= 2, 1, 0)
 
         accuracy = accuracy_score(self.y_val, y_preds)
         print(f"BINARY Validation Accuracy: {accuracy:.4f}")
