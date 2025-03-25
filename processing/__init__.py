@@ -1,3 +1,3 @@
-from .preprocess import lr_preprocess, nn_preprocess
+from .preprocess import preprocess
 
 print('imported preprocess')
