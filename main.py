@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from models import BOWLogisticRegressionCV
+from models import BOWLogisticRegressionCV, BOWNeuralNetworkCV
 from processing import preprocess
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -22,19 +22,37 @@ if __name__ == '__main__':
         binary=binary,
     )
 
-    # PARAMS TO TWEAK HERE
-    model = BOWLogisticRegressionCV(
-        max_iter=10000, 
+    # # PARAMS TO TWEAK HERE
+    # model = BOWLogisticRegressionCV(
+    #     max_iter=10000, 
+    #     test_size=0.1,
+    #     cv=5, 
+    #     c_vals=np.logspace(-5, 3, 30),
+    #     penalty=['l2'], 
+    #     solver=['lbfgs'], 
+    #     # penalty=['elasticnet'], 
+    #     # solver=['saga'],
+    #     scoring='roc_auc_ovr',
+    #     binary=binary,
+    #     random_state=1
+    # )
+
+    model = BOWNeuralNetworkCV( 
+        max_iter=1000, 
         test_size=0.1,
+        validation_fraction=0.1, 
         cv=5, 
-        c_vals=np.logspace(-5, 3, 30),
-        penalty=['l2'], 
-        solver=['lbfgs'], 
-        # penalty=['elasticnet'], 
-        # solver=['saga'],
-        scoring='roc_auc_ovr',
-        binary=binary,
-        random_state=1)
+        hidden_layer_sizes=[(100,)], 
+        activation='relu',
+        solver='adam',
+        alpha=[1e-4],
+        early_stopping=True,
+        n_iter_no_change=5,
+        batch_size='auto',
+        scoring='roc_auc',
+        binary=True, 
+        random_state=42
+    )
     
     # if you have trained and saved model comment out fit and run load
     model.fit(X_train_vectorized, y_train)

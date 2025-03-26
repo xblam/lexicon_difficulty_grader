@@ -49,7 +49,7 @@ import os
 # Path to output file
 file_path = os.path.join("data_readinglevel", "yproba1_test.txt")
 
-# Write 1197 lines of 0.1
-with open(file_path, "w") as f:
-    for _ in range(1197):
-        f.write("0.1\n")
+# # Write 1197 lines of 0.1
+# with open(file_path, "w") as f:
+#     for _ in range(1197):
+#         f.write("0.1\n")

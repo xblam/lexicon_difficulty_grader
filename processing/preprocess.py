@@ -8,12 +8,14 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 
 def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=10, binary=True):
+
     # vectorizer = Vectorizer(
     #     lowercase=lowercase,
     #     stop_words=stop_words,
     #     max_df=max_df,
     #     min_df=min_df,
     # )
+    
     vectorizer = TfidfVectorizer(
         lowercase=lowercase,
         stop_words=stop_words,
