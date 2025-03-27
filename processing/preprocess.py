@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import HashingVectorizer
 
 
-def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=10, binary=True):
+def lr_preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=10, binary=True):
 
     # vectorizer = Vectorizer(
     #     lowercase=lowercase,
@@ -41,3 +41,41 @@ def preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, mi
     else: y_train = label_encoder.fit_transform(y_train_df['Fine Label'].values)
 
     return X_train_vectorized, y_train, X_test_vectorized
+
+
+
+def nn_preprocess(dir_name='data_readinglevel', lowercase=True, stop_words=None, min_df=10, binary=True):
+
+    # vectorizer = Vectorizer(
+    #     lowercase=lowercase,
+    #     stop_words=stop_words,
+    #     max_df=max_df,
+    #     min_df=min_df,
+    # )
+    
+    vectorizer = TfidfVectorizer(
+        lowercase=lowercase,
+        stop_words=stop_words,
+        min_df=min_df,
+    )
+
+    # read in the data
+    data_dir = dir_name
+    x_train_df = pd.read_csv(os.path.join(data_dir, 'x_train.csv'))
+    y_train_df = pd.read_csv(os.path.join(data_dir, 'y_train.csv'))
+    x_test_df = pd.read_csv(os.path.join(data_dir, 'x_test.csv'))
+
+    tr_text_list = x_train_df['text'].values.tolist()
+    te_text_list = x_test_df['text'].values.tolist()
+
+    X_train_vectorized = vectorizer.fit_transform(tr_text_list)
+    X_test_vectorized = vectorizer.transform(te_text_list)
+    # vocab = vectorizer.get_feature_names_out()
+
+    label_encoder = LabelEncoder()
+
+    if binary: y_train = label_encoder.fit_transform(y_train_df['Coarse Label'].values)
+    else: y_train = label_encoder.fit_transform(y_train_df['Fine Label'].values)
+
+    return X_train_vectorized, y_train, X_test_vectorized
+

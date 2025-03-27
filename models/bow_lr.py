@@ -58,23 +58,41 @@ class BOWLogisticRegressionCV:
             print(f"C = {params['C']:.4f} -> Mean CV Accuracy = {mean_score:.4f}")
         self.best_model = grid_search.best_estimator_
         print("Best CV Params:", grid_search.best_params_)
-
+        
 
     def evaluate(self):
-        # get the multi class mean test score on validation
-        self.y_preds = self.predict_proba(self.X_test)[:,1]
-        
-        auc = roc_auc_score(self.y_test, self.y_preds)
+        # get predicted probabilities
+        self.y_preds = self.predict_proba(self.X_test)
+        print(f'Y_preds: {self.y_preds}')
 
-        # if multiclass get the binary class test score on val
         if not self.binary:
-            print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_test, self.y_preds)}')
-            self.y_test = np.where(self.y_test >= 2, 1, 0)
+            print("MULTICLASS detected")
 
-        auc = roc_auc_score(self.y_test, self.y_preds)
-        print(f"BINARY Validation Accuracy: {auc:.4f}")
+            # Convert y_test to binary
+            y_true_binary = self.make_binary(self.y_test)
 
-        # return accuracy
+            # Get predicted class indices, then map to binary
+            y_pred_classes = np.argmax(self.y_preds, axis=1)
+            y_pred_binary = self.make_binary(y_pred_classes)
+
+            # AUC and accuracy with multiclass -> binary
+            auc = roc_auc_score(y_true_binary, y_pred_binary)
+            acc = accuracy_score(y_true_binary, y_pred_binary)
+
+            print(f"BINARY-FORM MULTICLASS Accuracy: {acc:.4f}")
+            print(f"BINARY-FORM MULTICLASS AUC: {auc:.4f}")
+
+        else:
+            # bin classification
+            y_probs = self.y_preds[:, 1]
+            print(f'Y_probs: {y_probs}')
+            auc = roc_auc_score(self.y_test, y_probs)
+            acc = accuracy_score(self.y_test, (y_probs >= 0.5).astype(int))
+
+            print(f"BINARY Accuracy: {acc:.4f}")
+            print(f"BINARY AUC: {auc:.4f}")
+
+        return acc, auc
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)
@@ -102,6 +120,9 @@ class BOWLogisticRegressionCV:
 
         print("model and validation set loaded successfully.")
         return self.best_model
+
+    def make_binary(self, y):
+        return np.where(y >= 2, 1, 0)
 
     def plot_confusion_matrix(self):
         actual = self.y_test
