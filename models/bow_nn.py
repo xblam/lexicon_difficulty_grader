@@ -16,17 +16,18 @@ class BOWNeuralNetworkCV:
         validation_fraction=0.1, 
         cv=5, 
         hidden_layer_sizes=[(100,)], 
-        activation='relu',
-        solver='adam',
+        activation=['relu'],
+        solver=['adam'],
         alpha=[1e-4],
+        learning_rate_init=[1e-3],
+        batch_size=['auto'],
+        scoring='roc_auc',
         early_stopping=True,
         n_iter_no_change=5,
-        batch_size='auto',
-        scoring='roc_auc',
         binary=True, 
         random_state=42):
 
-        # Store all parameters as instance variables
+        # Store all parameters
         self.max_iter = max_iter
         self.test_size = test_size
         self.validation_fraction = validation_fraction
@@ -35,9 +36,10 @@ class BOWNeuralNetworkCV:
         self.activation = activation
         self.solver = solver
         self.alpha = alpha
+        self.learning_rate_init = learning_rate_init
+        self.batch_size = batch_size
         self.early_stopping = early_stopping
         self.n_iter_no_change = n_iter_no_change
-        self.batch_size = batch_size
         self.scoring = scoring
         self.binary = binary
         self.random_state = random_state
@@ -47,11 +49,12 @@ class BOWNeuralNetworkCV:
 
         self.param_grid = {
             'hidden_layer_sizes': self.hidden_layer_sizes,
-            'activation': [self.activation],
+            'activation': self.activation,
             'alpha': self.alpha,
-            'solver': [self.solver]
+            'learning_rate_init': self.learning_rate_init,
+            'solver': self.solver,
+            'batch_size': self.batch_size
         }
-
     def fit(self, X, y):
         # val set not used in cv folds, only for final eval
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
@@ -81,26 +84,21 @@ class BOWNeuralNetworkCV:
 
         # print out average accuracies for each level of c
         for mean_score, params in zip(grid_search.cv_results_['mean_test_score'], grid_search.cv_results_['params']):
-            print(f"C = {params['hidden_layer_sizes']} -> Mean CV Accuracy = {mean_score:.4f}")
+            print(f"Hidden layer sizers = {params['hidden_layer_sizes']} -> Mean CV Accuracy = {mean_score:.4f}")
         self.best_model = grid_search.best_estimator_
         print("Best CV Params:", grid_search.best_params_)
 
 
     def evaluate(self):
-        # get the multi class mean test score on validation
-        probs = self.predict_proba(self.X_test)[:,1]
-        
+        probs = self.predict_proba(self.X_test)[:, 1]
+        y_pred = (probs >= 0.5).astype(int)
+
+        acc = accuracy_score(self.y_test, y_pred)
         auc = roc_auc_score(self.y_test, probs)
 
-        # if multiclass get the binary class test score on val
-        if not self.binary:
-            print(f'MULTICLASS multi val accuracy: {accuracy_score(self.y_test, y_preds)}')
-            self.y_test = np.where(self.y_test >= 2, 1, 0)
-
-        auc = roc_auc_score(self.y_test, probs)
-        print(f"BINARY Validation Accuracy: {auc:.4f}")
-
-        # return accuracy
+        print(f"Binary Accuracy: {acc:.4f}")
+        print(f"Binary AUC: {auc:.4f}")
+        return acc, auc
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)
@@ -108,7 +106,7 @@ class BOWNeuralNetworkCV:
     def predict_proba(self, X_test):
         return self.best_model.predict_proba(X_test)
 
-    def save_model(self, path='output/lr_model.pkl'):
+    def save_model(self, path='output/nn_model.pkl'):
         model_bundle = {
             'model': self.best_model,
             'X_test': self.X_test,
@@ -118,7 +116,7 @@ class BOWNeuralNetworkCV:
             pickle.dump(model_bundle, f)
         print('model and validation set saved')
 
-    def load_model(self, path='output/lr_model.pkl'):
+    def load_model(self, path='output/nn_model.pkl'):
         with open(path, 'rb') as f:
             model_bundle = pickle.load(f)
 

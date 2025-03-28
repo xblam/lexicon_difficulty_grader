@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 from sklearn.metrics import roc_auc_score
 import numpy as np
 import pickle
@@ -59,7 +59,7 @@ class BOWLogisticRegressionCV:
             print(f"C = {params['C']:.4f} -> Mean CV Accuracy = {mean_score:.4f}")
         self.best_model = grid_search.best_estimator_
         print("Best CV Params:", grid_search.best_params_)
-        
+
 
     def evaluate(self):
         # get predicted probabilities
@@ -80,8 +80,8 @@ class BOWLogisticRegressionCV:
             auc = roc_auc_score(y_true_binary, y_pred_binary)
             acc = accuracy_score(y_true_binary, y_pred_binary)
 
-            print(f"BINARY-FORM MULTICLASS Accuracy: {acc:.4f}")
-            print(f"BINARY-FORM MULTICLASS AUC: {auc:.4f}")
+            print(f"BINARY-FORM MULTICLASS acc against test: {acc:.4f}")
+            print(f"BINARY-FORM MULTICLASS aud against test: {auc:.4f}")
 
         else:
             # bin classification
@@ -92,6 +92,10 @@ class BOWLogisticRegressionCV:
 
             print(f"BINARY Accuracy: {acc:.4f}")
             print(f"BINARY AUC: {auc:.4f}")
+
+        print("\nClassification Report:")
+        print(classification_report(self.y_test, self.best_model.predict(self.X_test)))
+        return acc, auc
 
         return acc, auc
 

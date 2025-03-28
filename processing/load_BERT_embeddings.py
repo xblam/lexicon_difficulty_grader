@@ -21,7 +21,7 @@ def load_arr_from_npz(npz_path):
     npz_file_obj.close()
     return arr
 
-if __name__ == '__main__':
+def load_BERT_embeddings():
     data_dir = 'data_readinglevel'
     x_train_df = pd.read_csv(os.path.join(data_dir, 'x_train.csv'))
     y_train_df = pd.read_csv(os.path.join(data_dir, 'y_train.csv'))
@@ -33,6 +33,12 @@ if __name__ == '__main__':
         data_dir, 'x_train_BERT_embeddings.npz'))
     assert xBERT_train_NH.ndim == 2
 
+    xBERT_test_NH = load_arr_from_npz(os.path.join(
+        data_dir, 'x_test_BERT_embeddings.npz'))
+    assert xBERT_test_NH.ndim == 2
+
+    print(xBERT_test_NH.shape)
+
     N, n_cols = x_train_df.shape
     N2, H = xBERT_train_NH.shape
     print("Shape of x_train_df: (%d, %d)" % (N, n_cols))
@@ -40,24 +46,25 @@ if __name__ == '__main__':
     print("Shape of xBERT_train_NH: %s" % str(xBERT_train_NH.shape))
 
     # Print out 8 random entries
-    tr_text_list = x_train_df['text'].values.tolist()
-    prng = np.random.RandomState(101)
-    rows = prng.permutation(np.arange(y_train_df.shape[0]))
-    for row_id in rows[:8]:
-        text = tr_text_list[row_id]
-        print("row %5d | %s BY %s | y = %s" % (
-            row_id,
-            y_train_df['title'].values[row_id],
-            y_train_df['author'].values[row_id],
-            y_train_df['Coarse Label'].values[row_id],
-            ))
-        # Pretty print text via textwrap library
-        line_list = textwrap.wrap(tr_text_list[row_id],
-            width=70,
-            initial_indent='  ',
-            subsequent_indent='  ')
-        print('\n'.join(line_list))
-        print("BERT embedding vector (size %d):" % H)
-        with np.printoptions(precision=2, edgeitems=4, threshold=50):
-            print(xBERT_train_NH[row_id])
-        print("")
+    # tr_text_list = x_train_df['text'].values.tolist()
+    # prng = np.random.RandomState(101)
+    # rows = prng.permutation(np.arange(y_train_df.shape[0]))
+    # for row_id in rows[:8]:
+    #     text = tr_text_list[row_id]
+    #     print("row %5d | %s BY %s | y = %s" % (
+    #         row_id,
+    #         y_train_df['title'].values[row_id],
+    #         y_train_df['author'].values[row_id],
+    #         y_train_df['Coarse Label'].values[row_id],
+    #         ))
+    #     # Pretty print text via textwrap library
+    #     line_list = textwrap.wrap(tr_text_list[row_id],
+    #         width=70,
+    #         initial_indent='  ',
+    #         subsequent_indent='  ')
+    #     print('\n'.join(line_list))
+    #     print("BERT embedding vector (size %d):" % H)
+    #     with np.printoptions(precision=2, edgeitems=4, threshold=50):
+    #         print(xBERT_train_NH[row_id])
+    #     print("")
+    return xBERT_train_NH, xBERT_test_NH
