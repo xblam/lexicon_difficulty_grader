@@ -11,7 +11,8 @@ from sklearn.metrics import *
 class BOWLogisticRegressionCV:
     def __init__(self, 
     max_iter=10000, 
-    test_size=0.2, cv=5, 
+    test_size=0.2, 
+    cv=5, 
     c_vals=[1e-4,1e-3,1e-2,1e-1,1,1e1,1e2,1e3], 
     penalty=['l2'], 
     solver=['lbfgs'], 
@@ -63,7 +64,7 @@ class BOWLogisticRegressionCV:
     def evaluate(self):
         # get predicted probabilities
         self.y_preds = self.predict_proba(self.X_test)
-        print(f'Y_preds: {self.y_preds}')
+        # print(f'Y_preds: {self.y_preds}')
 
         if not self.binary:
             print("MULTICLASS detected")
@@ -85,7 +86,7 @@ class BOWLogisticRegressionCV:
         else:
             # bin classification
             y_probs = self.y_preds[:, 1]
-            print(f'Y_probs: {y_probs}')
+            # print(f'Y_probs: {y_probs}')
             auc = roc_auc_score(self.y_test, y_probs)
             acc = accuracy_score(self.y_test, (y_probs >= 0.5).astype(int))
 
@@ -93,6 +94,7 @@ class BOWLogisticRegressionCV:
             print(f"BINARY AUC: {auc:.4f}")
 
         return acc, auc
+
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)

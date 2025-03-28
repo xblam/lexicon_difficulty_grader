@@ -17,7 +17,7 @@ if __name__ == '__main__':
     #PARAMS TO TWEAK HERE
     X_train_vectorized, y_train, X_test_vectorized = lr_preprocess(
         dir_name='data_readinglevel',
-        lowercase=True,
+        lowercase=True,        
         stop_words='english',
         min_df=10,
         binary=binary,
@@ -25,13 +25,13 @@ if __name__ == '__main__':
 
     # PARAMS TO TWEAK HERE
     model = BOWLogisticRegressionCV(
-        max_iter=10000, 
+        max_iter=10000,
         test_size=0.1,
-        cv=5, 
-        c_vals=np.logspace(-5, 3, 30),
+        cv=5,
+        c_vals=[0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100],
         penalty=['l2'], 
         solver=['lbfgs'], 
-        # penalty=['elasticnet'], 
+        # penalty=['elasticnet'],
         # solver=['saga'],
         scoring='roc_auc_ovr',
         binary=binary,
@@ -57,11 +57,14 @@ if __name__ == '__main__':
     
     # if you have trained and saved model comment out fit and run load
     model.fit(X_train_vectorized, y_train)
-    # loaded_model = model.load_model()
 
     model.evaluate()
-    model.save_model
-    y_test_pred = model.predict(X_test_vectorized)
+    model.save_model()
+    model.load_model()
+
+    y_test_pred = model.predict_proba(X_test_vectorized)
+
+    y_test_pred = y_test_pred[:, 1]
 
     # if not binary turn the guesses binary
     if not binary:
